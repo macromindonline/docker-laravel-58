@@ -1,6 +1,6 @@
 FROM macromind/docker-apache-php74:latest
 MAINTAINER MACROMIND Online <idc@macromind.online>
-LABEL description="Laravel 5.6"
+LABEL description="Laravel 5.8"
 
 RUN apt-get update && apt-get -y autoremove && apt-get clean && rm -rf /var/lib/apt/lists/*
 ADD conf/000-docker.conf /etc/apache2/sites-available/
