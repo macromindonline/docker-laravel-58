@@ -4,4 +4,29 @@ set -e
 # Apache gets grumpy about PID files pre-existing
 rm -f /var/run/apache2/apache2.pid
 
+REMOTEIP_CONF=/etc/apache2/conf-available/remoteip.conf
+MODSEC_CONF=/etc/modsecurity/modsecurity.conf
+
+# TRUSTED_PROXIES — lista separada por espaço de IPs/CIDRs adicionais
+# a confiar como proxy (ex: IP público do Skudonet quando fora da rede privada).
+# Ranges privados RFC1918 já são confiados estaticamente em remoteip.conf.
+if [ -n "${TRUSTED_PROXIES}" ]; then
+    # Remove bloco anterior antes de regravar (idempotente)
+    sed -i '/^# BEGIN runtime TRUSTED_PROXIES/,/^# END runtime TRUSTED_PROXIES/d' "${REMOTEIP_CONF}"
+    {
+        echo ""
+        echo "# BEGIN runtime TRUSTED_PROXIES"
+        for proxy in ${TRUSTED_PROXIES}; do
+            echo "RemoteIPTrustedProxy ${proxy}"
+        done
+        echo "# END runtime TRUSTED_PROXIES"
+    } >> "${REMOTEIP_CONF}"
+fi
+
+# MODSEC_ENGINE — Off | DetectionOnly | On (default: On vindo da imagem)
+# Use DetectionOnly nos primeiros 24-48h pra catalogar falsos positivos.
+if [ -n "${MODSEC_ENGINE}" ]; then
+    sed -i "s|^SecRuleEngine .*|SecRuleEngine ${MODSEC_ENGINE}|" "${MODSEC_CONF}"
+fi
+
 exec apache2 -DFOREGROUND
