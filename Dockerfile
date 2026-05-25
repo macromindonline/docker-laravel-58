@@ -20,7 +20,7 @@ COPY conf/remoteip.conf /etc/apache2/conf-available/remoteip.conf
 
 RUN /usr/sbin/a2dissite '*' \
     && /usr/sbin/a2ensite 000-docker \
-    && /usr/sbin/a2enmod security2 remoteip \
+    && /usr/sbin/a2enmod headers security2 remoteip \
     && /usr/sbin/a2enconf remoteip
 
 COPY apache2-foreground /usr/local/bin/
